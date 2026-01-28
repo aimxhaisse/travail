@@ -11,6 +11,17 @@ source .devrc
 travail-setup
 ```
 
+# Current flow
+
+This is opinionated.
+
+- open a tmux window
+- create a feature worktree
+- split tmux window in two panes
+- enter the feature container and do your stuff in one pane
+- commit from the outside on the other container
+- push and eventually destroy worktree
+
 # Create a new project
 
 ```zsh
@@ -23,7 +34,7 @@ git clone <repo-url> base
 
 ```zsh
 cd project/base
-git worktree add -b <feat/name> ../<name>
+git worktree add --relative-path -b <feat/name> ../<name>
 cd ../<name>
 travail-enter
 ```
