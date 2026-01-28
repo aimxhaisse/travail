@@ -1,0 +1,7 @@
+function travail-setup {
+    docker build -t workspace-dev-img -f Dockerfile .
+}
+
+function travail-enter {
+    docker run --rm -it -v "${PWD}:/workspace" -w /workspace workspace-dev-img /bin/bash
+}
