@@ -1,28 +1,48 @@
 # Travail
 
 Workspace approach to handle multiple projects with multiple features
-in parallel in isolated ways, suitable for agents. There is nothing
-new here, it's just a CLI-oriented flow I currently use.
+in parallel in isolated ways, suitable for agents.
 
-Read `.devrc` and then you are ready to work.
+You need 5 minutes of reading to know if this works for you, as well as:
+
+- zsh with autoenv plugin (optional)
+- tmux (optional)
+- opencode (optional)
+
+# Flow
+
+Full console. Opinionated. No magic. No fancy abstractions. You review.
+
+```
+projects
+    project-xxx
+       base        # base repository
+       feature-x   # worktree (relative)
+       feature-y   # worktree (relative)
+    project-yyy
+       base        # base repository
+       feature-y   # worktree (relative)
+```
+
+Each feature is addressed in a tmux window split in two panes, one for
+the agent running under a container mounting the feature, the other
+for you to commit on the side.
+
+# Facilities
+
+- If your project has a .tool-versions at its root, entering the container will install them,
+- A cache folder is created on the host and shared on devel containers to go spawn quickly,
+- Your gitconfig is mounted in the devel container if you want to vibe.
+
+# Cookbook
+
+## Initialize the docker image
 
 ```zsh
-source .devrc
 travail-setup
 ```
 
-# Current flow
-
-This is opinionated.
-
-- open a tmux window
-- create a feature worktree
-- split tmux window in two panes
-- enter the feature container and do your stuff in one pane
-- commit from the outside on the other container
-- push and eventually destroy worktree
-
-# Create a new project
+## Create a new project
 
 ```zsh
 mkdir -p project/<project-name>
@@ -30,7 +50,7 @@ cd project/<project-name>
 git clone <repo-url> base
 ```
 
-# Work on a feature
+## Work on a feature
 
 ```zsh
 cd project/base
