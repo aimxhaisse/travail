@@ -12,6 +12,7 @@ RUN apt-get -y update && \
       git \
       gpp \
       zsh \
+      sudo \
       emacs-nox
 
 RUN groupadd -f -g ${GID} ${USERNAME}
@@ -33,3 +34,6 @@ RUN curl https://mise.run | sh
 RUN echo 'eval "$(~/.local/bin/mise activate zsh)"' >> ~/.zshrc
 
 RUN echo 'PROMPT="[🪱] $PROMPT"' >> ~/.zshrc
+
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
