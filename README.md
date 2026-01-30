@@ -13,8 +13,8 @@ Workspace isolation for parallel feature development.
 ```
 projects/
     webapp/
-       base        # source of truth
-       dark-mode   # isolated feature branch
+       base        # initial clone of the repository
+       dark-mode   # copy of base on a dedicated feature branch
        api-v2      # another feature, in parallel
 ```
 
@@ -23,9 +23,8 @@ Each feature lives in its own directory, its own container, its own tmux pane. N
 ## Requirements
 
 - Docker
-- zsh + autoenv plugin *(optional)*
-- tmux *(optional)*
-- opencode *(optional)*
+- tmux
+- opencode
 
 ## Quick Start
 
