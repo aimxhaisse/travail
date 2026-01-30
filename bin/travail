@@ -95,7 +95,7 @@ def get_docker_cmd(
     travail_root = get_travail_root()
     cache_dir = travail_root / ".cache"
     user_home_container = Path(f"/home/{username}")
-    container_name = f"travail/{project}/{feature}"
+    container_name = f"travail-{project}-{feature}"
     
     # Ensure cache dirs exist
     (cache_dir / "mise").mkdir(parents=True, exist_ok=True)
