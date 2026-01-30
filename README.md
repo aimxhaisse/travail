@@ -39,7 +39,7 @@ for you to commit on the side.
 ## Initialize the docker image
 
 ```zsh
-travail-setup
+./cli.py build
 ```
 
 ## Create a new project
@@ -56,5 +56,7 @@ git clone <repo-url> base
 cd project/base
 git worktree add --relative-path -b <feat/name> ../<name>
 cd ../<name>
-travail-enter
+../../cli.py enter
 ```
+
+(Note: You can alias `travail` to `path/to/cli.py` for convenience)

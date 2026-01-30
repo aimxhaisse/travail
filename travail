@@ -1,0 +1,133 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "typer",
+#     "rich",
+# ]
+# ///
+
+import os
+import pwd
+import subprocess
+import sys
+from pathlib import Path
+from typing import List, Tuple
+
+import typer
+from rich.console import Console
+
+app = typer.Typer(help="CLI for managing the development container environment.", no_args_is_help=True)
+console = Console()
+
+IMAGE_NAME = "workspace-dev-img"
+CONTAINER_NAME = "opencode-dev"
+
+def get_current_user_info() -> Tuple[int, int, str]:
+    """Get the current user's UID, GID, and username."""
+    uid = os.getuid()
+    gid = os.getgid()
+    try:
+        username = os.environ.get("USER") or pwd.getpwuid(uid).pw_name
+    except KeyError:
+        username = "user" 
+    return uid, gid, username
+
+def run_command(cmd: List[str], check: bool = True, shell: bool = False) -> None:
+    """Run a shell command."""
+    try:
+        subprocess.run(cmd, check=check, shell=shell)
+    except subprocess.CalledProcessError as e:
+        console.print(f"[bold red]Error running command:[/bold red] {e}")
+        raise typer.Exit(code=1)
+
+def get_docker_cmd(target_dir: Path, uid: int, gid: int, username: str) -> List[str]:
+    """Build the docker run command with all necessary mounts."""
+    
+    # Determine project root (assuming script is at root)
+    script_path = Path(__file__).resolve()
+    project_root = script_path.parent
+    cache_dir = project_root / ".cache"
+    user_home_container = Path(f"/home/{username}")
+    
+    # Ensure cache dirs exist
+    (cache_dir / "mise").mkdir(parents=True, exist_ok=True)
+    
+    cmd = [
+        "docker", "run",
+        "--rm", "-it",
+        "-v", f"{target_dir}:/workspace",
+        "-w", "/workspace",
+        # Persist mise cache
+        "-v", f"{cache_dir}/mise:{user_home_container}/.local/share/mise",
+    ]
+
+    # Optional mounts from home directory
+    home = Path.home()
+    optional_mounts = [
+        (home / ".gitconfig", user_home_container / ".gitconfig"),
+        (home / ".local/share/opencode/auth.json", user_home_container / ".local/share/opencode/auth.json"),
+        (home / ".config/opencode/opencode.json", user_home_container / ".config/opencode/opencode.json"),
+    ]
+
+    for src, dest in optional_mounts:
+        if src.exists():
+            cmd.extend(["-v", f"{src}:{dest}"])
+    
+
+            
+    cmd.append(IMAGE_NAME)
+    cmd.append("/bin/zsh") # Default command
+    
+    return cmd
+
+@app.command()
+def setup(
+    no_cache: bool = typer.Option(False, "--no-cache", help="Do not use cache when building."),
+) -> None:
+    """
+    Build the Docker image.
+    """
+    uid, gid, username = get_current_user_info()
+    
+    console.print(f"[green]Building image '{IMAGE_NAME}' for user '{username}' ({uid}:{gid})...[/green]")
+    
+    cmd = [
+        "docker", "build",
+        "--build-arg", f"UID={uid}",
+        "--build-arg", f"GID={gid}",
+        "--build-arg", f"USERNAME={username}",
+        "-t", IMAGE_NAME,
+        "-f", "Dockerfile",
+        "."
+    ]
+    
+    if no_cache:
+        cmd.append("--no-cache")
+        
+    run_command(cmd)
+    console.print(f"[bold green]Successfully built {IMAGE_NAME}![/bold green]")
+
+@app.command()
+def enter(
+    path: Path = typer.Argument(Path.cwd(), help="Path to the project directory."),
+) -> None:
+    """
+    Enter the development container.
+    """
+    uid, gid, username = get_current_user_info()
+    target_dir = path.resolve()
+    
+    docker_cmd_list = get_docker_cmd(target_dir, uid, gid, username)
+    docker_cmd_str = " ".join(docker_cmd_list)
+
+    console.print(f"[bold blue]Exec:[/bold blue] {docker_cmd_str}")
+    sys.stdout.flush()
+    try:
+        os.execvp("docker", docker_cmd_list)
+    except OSError as e:
+        console.print(f"[bold red]Failed to execute docker:[/bold red] {e}")
+        raise typer.Exit(code=1)
+
+if __name__ == "__main__":
+    app()
