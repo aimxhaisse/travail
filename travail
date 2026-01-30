@@ -44,7 +44,7 @@ def run_command(cmd: List[str], check: bool = True, shell: bool = False) -> None
         console.print(f"[bold red]Error running command:[/bold red] {e}")
         raise typer.Exit(code=1)
 
-def get_docker_cmd(target_dir: Path, uid: int, gid: int, username: str) -> List[str]:
+def get_docker_cmd(target_dir: Path, uid: int, gid: int, username: str, is_base: bool = False) -> List[str]:
     """Build the docker run command with all necessary mounts."""
     
     # Determine project root (assuming script is at root)
@@ -64,6 +64,10 @@ def get_docker_cmd(target_dir: Path, uid: int, gid: int, username: str) -> List[
         # Persist mise cache
         "-v", f"{cache_dir}/mise:{user_home_container}/.local/share/mise",
     ]
+    
+    # Pass flag to entrypoint if entering base directory
+    if is_base:
+        cmd.extend(["-e", "TRAVAIL_IS_BASE=1"])
 
     # Optional mounts from home directory
     home = Path.home()
@@ -341,51 +345,57 @@ def feature_list(
 
 @feature_app.command("enter")
 def feature_enter(
-    project: Optional[str] = typer.Argument(None, help="Project name"),
-    feature: Optional[str] = typer.Argument(None, help="Feature name")
+    arg1: Optional[str] = typer.Argument(None, help="Project or feature name (context-dependent)"),
+    arg2: Optional[str] = typer.Argument(None, help="Feature name (when first arg is project)")
 ) -> None:
-    """Enter the development container for a feature."""
-    projects_dir = get_projects_dir()
-    is_base = False
+    """Enter the development container for a feature.
     
-    # Determine target directory
-    if project and feature:
-        target_dir = projects_dir / project / feature
-        is_base = is_base_dir(target_dir)
-    elif project and not feature:
-        # Check if project arg is actually a path within projects
-        potential_path = projects_dir / project
-        if potential_path.exists():
-            target_dir = potential_path
-            is_base = is_base_dir(target_dir)
-        else:
-            # Try to detect from cwd
-            detected_project, detected_feature, is_base = detect_context(Path.cwd())
-            if detected_project:
-                target_dir = Path.cwd()
-            else:
-                console.print(f"[bold red]Error:[/bold red] Could not determine feature to enter")
-                raise typer.Exit(code=1)
-    else:
-        # Detect from cwd
-        detected_project, detected_feature, is_base = detect_context(Path.cwd())
+    Context-aware argument handling:
+    - Inside a project dir: single arg is treated as feature name
+    - Outside project dirs: both project and feature args required
+    """
+    projects_dir = get_projects_dir()
+    
+    # Detect current context
+    detected_project, detected_feature, is_base = detect_context(Path.cwd())
+    
+    if arg1 and arg2:
+        # Both provided: arg1=project, arg2=feature
+        target_dir = projects_dir / arg1 / arg2
+    elif arg1 and not arg2:
         if detected_project:
-            target_dir = Path.cwd()
+            # Inside a project dir: arg1=feature
+            target_dir = projects_dir / detected_project / arg1
         else:
-            console.print(f"[bold red]Error:[/bold red] Not inside a project directory")
+            # Outside project dirs: need both args
+            console.print(f"[bold red]Error:[/bold red] Outside project directory. Please specify both project and feature.")
+            raise typer.Exit(code=1)
+    else:
+        # No args: must be inside a feature or base dir
+        if detected_project and detected_feature:
+            # Inside a feature dir
+            target_dir = projects_dir / detected_project / detected_feature
+        elif detected_project and is_base:
+            # Inside base dir - warn and enter
+            target_dir = projects_dir / detected_project / "base"
+        elif detected_project:
+            # Inside project dir but not in feature/base
+            console.print(f"[bold red]Error:[/bold red] Please specify a feature name")
+            raise typer.Exit(code=1)
+        else:
+            # Outside project dirs entirely
+            console.print(f"[bold red]Error:[/bold red] Not inside a project directory. Please specify project and feature.")
             raise typer.Exit(code=1)
     
+    # Validate target exists
     if not target_dir.exists():
         console.print(f"[bold red]Error:[/bold red] Directory not found: {target_dir}")
         raise typer.Exit(code=1)
     
-    # Warn if entering base
-    if is_base:
-        console.print(f"[bold yellow]Warning:[/bold yellow] Entering 'base' directory, not a feature")
-    
-    # Enter container
+    # Enter container (warning for base is printed inside container via TRAVAIL_IS_BASE env var)
     uid, gid, username = get_current_user_info()
-    docker_cmd_list = get_docker_cmd(target_dir.resolve(), uid, gid, username)
+    is_base = is_base_dir(target_dir)
+    docker_cmd_list = get_docker_cmd(target_dir.resolve(), uid, gid, username, is_base=is_base)
     docker_cmd_str = " ".join(docker_cmd_list)
 
     console.print(f"[bold blue]Exec:[/bold blue] {docker_cmd_str}")
