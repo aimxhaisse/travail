@@ -13,6 +13,11 @@ RUN apt-get -y update && \
       gpp \
       zsh \
       sudo \
+      build-essential \
+      cmake \
+      clang \
+      protobuf-compiler \
+      pkg-config \
       emacs-nox
 
 RUN groupadd -f -g ${GID} ${USERNAME}
