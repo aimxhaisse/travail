@@ -33,7 +33,7 @@ RUN /home/${USERNAME}/.opencode/bin/opencode stats
 RUN curl https://mise.run | sh
 RUN echo 'eval "$(~/.local/bin/mise activate zsh)"' >> ~/.zshrc
 
-RUN echo 'PROMPT="[🪱] $PROMPT"' >> ~/.zshrc
+RUN echo 'PROMPT="[🔨] $PROMPT"' >> ~/.zshrc
 
 COPY --chmod=755 entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

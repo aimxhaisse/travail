@@ -1,91 +1,60 @@
 # Travail
 
-Workspace approach to handle multiple projects with multiple features
-in parallel in isolated ways, suitable for agents.
+<p align="center">
+  <img src="assets/peon.png" alt="Work work" width="200">
+</p>
 
-You need 5 minutes of reading to know if this works for you, as well as:
+<p align="center">
+  <em>"Work work"</em>
+</p>
 
-- zsh with autoenv plugin (optional)
-- tmux (optional)
-- opencode (optional)
-
-# Flow
-
-Full console. Opinionated. No magic. No fancy abstractions. You review.
+Workspace isolation for parallel feature development.
 
 ```
-projects
-    project-xxx
-       base        # base repository
-       feature-x   # copy of base
-       feature-y   # copy of base
-    project-yyy
-       base        # base repository
-       feature-y   # copy of base
+projects/
+    webapp/
+       base        # source of truth
+       dark-mode   # isolated feature branch
+       api-v2      # another feature, in parallel
 ```
 
-Each feature is addressed in a tmux window split in two panes, one for
-the agent running under a container mounting the feature, the other
-for you to commit on the side.
+Each feature lives in its own directory, its own container, its own tmux pane. No conflicts. No context bleeding. Just work.
 
-# Facilities
+## Requirements
 
-- If your project has a .tool-versions at its root, entering the container will install them,
-- A cache folder is created on the host and shared on devel containers to go spawn quickly,
-- Your gitconfig is mounted in the devel container if you want to vibe.
+- Docker
+- zsh + autoenv plugin *(optional)*
+- tmux *(optional)*
+- opencode *(optional)*
 
-# Cookbook
-
-## Initialize the docker image
+## Quick Start
 
 ```zsh
-travail setup
+travail setup                              # Build the dev container
+travail project add git@github.com:x/y.git # Clone a project
+travail feature new webapp dark-mode       # Branch off and isolate
+travail feature enter webapp dark-mode     # Drop into the container
 ```
 
-## Add a project
+## Usage
 
-```zsh
-travail project add <repo-url>
-# Example: travail project add git@github.com:acme/webapp.git
+```
+travail - Workspace isolation for parallel feature development
+
+Usage:
+  travail <command> [options]
+
+Commands:
+  setup              Build the development container image
+  project            Manage projects (add, list)
+  feature            Manage features (new, list, enter, remove)
+
+Run 'travail <command> --help' for more information on a command.
 ```
 
-## List projects
+## How It Works
 
-```zsh
-travail project list
-```
-
-## Create a feature
-
-```zsh
-travail feature new <project> <name>
-# Example: travail feature new webapp dark-mode
-```
-
-This will:
-1. Pull latest changes in base
-2. Copy base to the new feature directory
-3. Create a `feat/<name>` branch
-
-## List features
-
-```zsh
-travail feature list              # All features across all projects
-travail feature list <project>    # Features for a specific project
-```
-
-## Enter a feature container
-
-```zsh
-cd projects/<project>/<feature>
-travail feature enter
-
-# Or explicitly:
-travail feature enter <project> <feature>
-```
-
-## Remove a feature
-
-```zsh
-travail feature remove <project> <name>
-```
+1. **Projects** are git repos cloned into `projects/<name>/base`
+2. **Features** are full copies of base with their own `feat/<name>` branch
+3. **Containers** mount your feature directory with shared caches for speed
+4. Your `.tool-versions` and `.gitconfig` are respected inside containers
