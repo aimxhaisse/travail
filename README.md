@@ -23,8 +23,18 @@ Each feature lives in its own directory, its own container, its own tmux pane. N
 ## Requirements
 
 - Docker
-- tmux
-- opencode
+- [uv](https://docs.astral.sh/uv/) (Python package manager)
+- opencode *(optional)*
+
+## Installation
+
+```zsh
+git clone git@github.com:your-org/travail.git ~/travail
+export PATH="$HOME/travail/bin:$PATH"
+
+# Add to your shell profile (.zshrc / .bashrc):
+echo 'export PATH="$HOME/travail/bin:$PATH"' >> ~/.zshrc
+```
 
 ## Quick Start
 

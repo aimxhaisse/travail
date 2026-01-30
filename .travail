@@ -1,0 +1,9 @@
+This file marks a valid travail installation.
+
+The travail CLI resolves paths relative to its parent directory (bin/../).
+If this file is missing, travail will refuse to run to prevent accidental
+operations on unintended directories.
+
+Do not copy the bin/travail script to another location without the full
+repository structure, as it may cause data loss (e.g., feature removal
+targeting wrong directories).
