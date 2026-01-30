@@ -17,11 +17,11 @@ Full console. Opinionated. No magic. No fancy abstractions. You review.
 projects
     project-xxx
        base        # base repository
-       feature-x   # worktree (relative)
-       feature-y   # worktree (relative)
+       feature-x   # copy of base
+       feature-y   # copy of base
     project-yyy
        base        # base repository
-       feature-y   # worktree (relative)
+       feature-y   # copy of base
 ```
 
 Each feature is addressed in a tmux window split in two panes, one for
@@ -39,24 +39,53 @@ for you to commit on the side.
 ## Initialize the docker image
 
 ```zsh
-./cli.py build
+travail setup
 ```
 
-## Create a new project
+## Add a project
 
 ```zsh
-mkdir -p project/<project-name>
-cd project/<project-name>
-git clone <repo-url> base
+travail project add <repo-url>
+# Example: travail project add git@github.com:acme/webapp.git
 ```
 
-## Work on a feature
+## List projects
 
 ```zsh
-cd project/base
-git worktree add --relative-path -b <feat/name> ../<name>
-cd ../<name>
-../../cli.py enter
+travail project list
 ```
 
-(Note: You can alias `travail` to `path/to/cli.py` for convenience)
+## Create a feature
+
+```zsh
+travail feature new <project> <name>
+# Example: travail feature new webapp dark-mode
+```
+
+This will:
+1. Pull latest changes in base
+2. Copy base to the new feature directory
+3. Create a `feat/<name>` branch
+
+## List features
+
+```zsh
+travail feature list              # All features across all projects
+travail feature list <project>    # Features for a specific project
+```
+
+## Enter a feature container
+
+```zsh
+cd projects/<project>/<feature>
+travail feature enter
+
+# Or explicitly:
+travail feature enter <project> <feature>
+```
+
+## Remove a feature
+
+```zsh
+travail feature remove <project> <name>
+```
