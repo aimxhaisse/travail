@@ -283,7 +283,7 @@ def project_list() -> None:
 
 @project_app.command("pull")
 def project_pull() -> None:
-    """Pull latest changes for all projects (git pull origin main)."""
+    """Pull latest changes for all projects (git pull origin)."""
     projects_dir = get_projects_dir()
     
     for project_path in sorted(projects_dir.iterdir()):
@@ -298,7 +298,7 @@ def project_pull() -> None:
         try:
             # We capture output to keep it clean, but if it fails we show stderr
             result = subprocess.run(
-                ["git", "pull", "origin", "main"],
+                ["git", "pull", "origin"],
                 cwd=base_path,
                 capture_output=True,
                 text=True,
