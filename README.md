@@ -41,8 +41,8 @@ echo 'export PATH="$HOME/travail/bin:$PATH"' >> ~/.zshrc
 ```zsh
 travail setup                              # Build the dev container
 travail project add git@github.com:x/y.git # Clone a project
-travail feature new webapp dark-mode       # Branch off and isolate
-travail feature enter webapp dark-mode     # Drop into the container
+travail feature add webapp dark-mode       # Branch off and isolate
+travail shell webapp dark-mode             # Drop into the container
 ```
 
 ## Usage
@@ -55,8 +55,9 @@ Usage:
 
 Commands:
   setup              Build the development container image
+  shell              Start a shell session in a feature container
   project            Manage projects (add, list)
-  feature            Manage features (new, list, enter, remove)
+  feature            Manage features (add, list, remove)
 
 Run 'travail <command> --help' for more information on a command.
 ```
