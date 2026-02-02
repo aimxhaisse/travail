@@ -281,6 +281,35 @@ def project_list() -> None:
     console.print(table)
 
 
+@project_app.command("pull")
+def project_pull() -> None:
+    """Pull latest changes for all projects (git pull origin main)."""
+    projects_dir = get_projects_dir()
+    
+    for project_path in sorted(projects_dir.iterdir()):
+        if not project_path.is_dir():
+            continue
+            
+        base_path = project_path / "base"
+        if not base_path.exists():
+            continue
+            
+        console.print(f"[bold cyan]Project: {project_path.name}[/bold cyan]")
+        try:
+            # We capture output to keep it clean, but if it fails we show stderr
+            result = subprocess.run(
+                ["git", "pull", "origin", "main"],
+                cwd=base_path,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            console.print("  [green]Success[/green]")
+        except subprocess.CalledProcessError as e:
+            console.print(f"  [red]Failed:[/red] {e.stderr.strip()}")
+            console.print(f"  [dim]Command output: {e.stdout.strip()}[/dim]")
+
+
 # =============================================================================
 # Feature commands
 # =============================================================================
