@@ -86,9 +86,13 @@ def get_docker_cmd(
     uid: int,
     gid: int,
     username: str,
+    extra_mounts: Optional[List[str]] = None,
 ) -> List[str]:
     """Build the docker run command with all necessary mounts."""
     
+    if extra_mounts is None:
+        extra_mounts = []
+
     travail_root = get_travail_root()
     cache_dir = travail_root / ".cache"
     user_home_container = Path(f"/home/{username}")
@@ -106,6 +110,20 @@ def get_docker_cmd(
         # Persist mise cache
         "-v", f"{cache_dir}/mise:{user_home_container}/.local/share/mise",
     ]
+    
+    # Process extra mounts
+    for mount in extra_mounts:
+        if ":" in mount:
+            host_path_str, container_path = mount.split(":", 1)
+            host_path = Path(host_path_str).resolve()
+        else:
+            host_path = Path(mount).resolve()
+            container_path = f"/mounts/{host_path.name}"
+            
+        if host_path.exists():
+            cmd.extend(["-v", f"{host_path}:{container_path}"])
+        else:
+            console.print(f"[yellow]Warning:[/yellow] Mount source '{host_path}' does not exist, skipping.")
     
     # Optional mounts from home directory
     home = Path.home()
@@ -355,7 +373,7 @@ def feature_list(
     console.print(table)
 
 
-def enter_container(target_dir: Path) -> None:
+def enter_container(target_dir: Path, mounts: Optional[List[str]] = None) -> None:
     """Enter the container for the target directory."""
     if not target_dir.exists():
         console.print(f"[bold red]Error:[/bold red] Directory not found: {target_dir}")
@@ -363,7 +381,7 @@ def enter_container(target_dir: Path) -> None:
     
     uid, gid, username = get_current_user_info()
     docker_cmd_list = get_docker_cmd(
-        target_dir.resolve(), uid, gid, username
+        target_dir.resolve(), uid, gid, username, mounts
     )
     docker_cmd_str = " ".join(docker_cmd_list)
 
@@ -378,11 +396,12 @@ def enter_container(target_dir: Path) -> None:
 
 @app.command("shell")
 def shell(
-    path: Optional[Path] = typer.Argument(None, help="Target directory (defaults to current)")
+    path: Optional[Path] = typer.Argument(None, help="Target directory (defaults to current)"),
+    mounts: Optional[List[str]] = typer.Option(None, "--mount", "-m", help="Additional mounts (format: /host/path or /host/path:/container/path)"),
 ) -> None:
     """Enter the development container for the specified directory."""
     target_dir = path.resolve() if path else Path.cwd()
-    enter_container(target_dir)
+    enter_container(target_dir, mounts)
 
 
 @feature_app.command("remove")
