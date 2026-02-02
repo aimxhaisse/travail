@@ -5,7 +5,7 @@ if [ -n "$TRAVAIL_IS_BASE" ]; then
 fi
 
 if [ -f /workspace/.tool-versions ]; then
-    mise install
+    $HOME/.local/bin/mise install
 fi
 
 exec $@
