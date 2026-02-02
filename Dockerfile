@@ -35,6 +35,9 @@ RUN curl -fsSL https://opencode.ai/install | bash
 RUN echo "PATH=${PATH}:/home/${USERNAME}/.opencode/bin" >> ~/.zshrc
 RUN /home/${USERNAME}/.opencode/bin/opencode stats
 
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
+
 RUN curl https://mise.run | sh
 RUN echo 'eval "$(~/.local/bin/mise activate zsh)"' >> ~/.zshrc
 
