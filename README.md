@@ -62,6 +62,18 @@ Commands:
 Run 'travail <command> --help' for more information on a command.
 ```
 
+## Mounting Directories
+
+You can mount additional directories into the container using the `--mount` (or `-m`) flag:
+
+```zsh
+# Mount a directory to /mounts/foo
+travail shell webapp dark-mode --mount /path/to/foo
+
+# Mount a directory to a specific path
+travail shell webapp dark-mode --mount /path/to/foo:/data/foo
+```
+
 ## How It Works
 
 1. **Projects** are git repos cloned into `projects/<name>/base`
