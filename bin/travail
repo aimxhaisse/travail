@@ -465,9 +465,7 @@ def feature_remove(
 # =============================================================================
 
 @app.command()
-def setup(
-    no_cache: bool = typer.Option(False, "--no-cache", help="Do not use cache when building."),
-) -> None:
+def setup() -> None:
     """
     Build the Docker image.
     """
@@ -478,6 +476,7 @@ def setup(
     
     cmd = [
         "docker", "build",
+        "--no-cache",
         "--build-arg", f"UID={uid}",
         "--build-arg", f"GID={gid}",
         "--build-arg", f"USERNAME={username}",
@@ -485,9 +484,6 @@ def setup(
         "-f", str(travail_root / "Dockerfile"),
         str(travail_root)
     ]
-    
-    if no_cache:
-        cmd.append("--no-cache")
         
     run_command(cmd)
     console.print(f"[bold green]Successfully built {IMAGE_NAME}![/bold green]")
