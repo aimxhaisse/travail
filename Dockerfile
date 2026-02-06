@@ -38,7 +38,7 @@ RUN /home/${USERNAME}/.opencode/bin/opencode stats
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 RUN echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none
 
 RUN curl https://mise.run | sh
 RUN echo 'eval "$(~/.local/bin/mise activate zsh)"' >> ~/.zshrc
