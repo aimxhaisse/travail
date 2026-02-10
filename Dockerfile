@@ -18,7 +18,8 @@ RUN apt-get -y update && \
       clang \
       protobuf-compiler \
       pkg-config \
-      emacs-nox
+      emacs-nox \
+      libssl-dev
 
 RUN groupadd -f -g ${GID} ${USERNAME}
 RUN useradd -u ${UID} -g ${GID} ${USERNAME} --create-home
