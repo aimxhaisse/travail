@@ -19,6 +19,7 @@ RUN apt-get -y update && \
       protobuf-compiler \
       pkg-config \
       emacs-nox \
+      jq \
       libssl-dev
 
 RUN groupadd -f -g ${GID} ${USERNAME}
@@ -46,5 +47,6 @@ RUN echo 'eval "$(~/.local/bin/mise activate zsh)"' >> ~/.zshrc
 
 RUN echo 'PROMPT="[🔨] $PROMPT"' >> ~/.zshrc
 
+COPY --chmod=755 oh-my-opencode-wrapper.sh /usr/local/bin/oh-my-opencode
 COPY --chmod=755 entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
