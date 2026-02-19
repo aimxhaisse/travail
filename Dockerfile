@@ -20,7 +20,8 @@ RUN apt-get -y update && \
       pkg-config \
       emacs-nox \
       jq \
-      libssl-dev
+      libssl-dev \
+      unzip
 
 RUN groupadd -f -g ${GID} ${USERNAME}
 RUN useradd -u ${UID} -g ${GID} ${USERNAME} --create-home
