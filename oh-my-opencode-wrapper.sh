@@ -12,9 +12,9 @@ ORIG_CONFIG_FILE="$HOME/.config/opencode/opencode.json"
 mkdir -p "$(dirname "$TARGET_CONFIG_FILE")"
 
 if [ -f "$ORIG_CONFIG_FILE" ]; then
-    jq 'if .plugins then . else . + {plugins: []} end | .plugins += ["oh-my-opencode"] | .plugins |= unique' "$ORIG_CONFIG_FILE" > "$TARGET_CONFIG_FILE"
+    jq 'if .plugin then . else . + {plugin: []} end | .plugin += ["oh-my-opencode"] | .plugin |= unique' "$ORIG_CONFIG_FILE" > "$TARGET_CONFIG_FILE"
 else
-    echo '{"plugins": ["oh-my-opencode"]}' > "$TARGET_CONFIG_FILE"
+    echo '{"plugin": ["oh-my-opencode"]}' > "$TARGET_CONFIG_FILE"
 fi
 
 export XDG_CONFIG_HOME="$CUSTOM_CONFIG_DIR"
