@@ -21,7 +21,8 @@ RUN apt-get -y update && \
       emacs-nox \
       jq \
       libssl-dev \
-      unzip
+      unzip \
+      nodejs
 
 RUN groupadd -f -g ${GID} ${USERNAME}
 RUN useradd -u ${UID} -g ${GID} ${USERNAME} --create-home
@@ -54,4 +55,5 @@ RUN echo 'PROMPT="[🔨] $PROMPT"' >> ~/.zshrc
 
 COPY --chmod=755 oh-my-opencode-wrapper.sh /usr/local/bin/oh-my-opencode
 COPY --chmod=755 entrypoint.sh /entrypoint.sh
+
 ENTRYPOINT ["/entrypoint.sh"]
